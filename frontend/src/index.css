@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-primary: #0f172a; /* Bleu très sombre (Slate 900) */
+  --bg-secondary: #1e293b; /* Bleu sombre (Slate 800) */
+  --text-primary: #f8fafc; /* Blanc cassé */
+  --text-secondary: #94a3b8; /* Gris bleuté */
+  --accent-color: #6366f1; /* Indigo (pour les boutons) */
+  --accent-hover: #4f46e5;
+  
+  /* Couleurs spécifiques pour le vocabulaire (façon LingQ) */
+  --word-known: #10b981; /* Émeraude (Connu) */
+  --word-learning: #f59e0b; /* Ambre (En apprentissage) */
+  --word-new: #3b82f6; /* Bleu (Nouveau) */
+  --word-unknown: #ef4444; /* Rouge (Inconnu) */
+
+  /* Variables pour l'effet "Verre" (Glassmorphism) */
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Personnalisation de la sélection de texte (quand on surligne à la souris) */
+::selection {
+  background-color: rgba(99, 102, 241, 0.5); /* Couleur accentuée (Indigo) avec opacité */
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: rgba(99, 102, 241, 0.5);
+  color: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* Pour Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.5) rgba(15, 23, 42, 0.3);
+}
+
+/* Personnalisation de la barre de défilement (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.5); /* Couleur accentuée avec opacité */
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.8);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Utilitaires pour le Glassmorphism */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem 3rem; /* Less vertical padding, keep horizontal padding */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Boutons stylisés */
+.btn {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Typographie moderne */
+h1 {
+  font-size: 4rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* Nouvelles classes pour la responsivité */
+.main-app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.reading-container {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.dictionary-sidebar {
+  width: 400px;
+  background-color: rgba(20, 20, 20, 0.95);
+  padding: 2rem;
+  border-left: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+  .main-app-container {
+    flex-direction: column;
+  }
+  .reading-container {
+    flex-direction: column;
+  }
+  .dictionary-sidebar {
+    width: 100%;
+    height: 40vh;
+    border-left: none;
+    border-top: 1px solid var(--glass-border);
+  }
+  #root {
+    padding: 0;
+  }
+  .glass-panel {
+    padding: 1.5rem;
+  }
+  h1 {
+    font-size: 2.5rem;
+  }
+}
+

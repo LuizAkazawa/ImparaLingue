@@ -1,0 +1,45 @@
+# Mac OS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node / React (Frontend)
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Go / Backend
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+__debug_bin
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs / Temp files / Uploads
+*.log
+tmp/
+temp/
+downloads/
+
+# User requested ignored directories
+images/
+planning/
+whisper.cpp/
