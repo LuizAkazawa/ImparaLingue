@@ -199,6 +199,7 @@ func extractHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur lors de la lecture du PDF", http.StatusInternalServerError)
 			return
 		}
+		text = cleanPDFText(text)
 	} else if ext == ".srt" || ext == ".vtt" || ext == ".txt" {
 		text = string(fileBytes)
 		if ext == ".srt" || ext == ".vtt" {
@@ -228,6 +229,34 @@ func readPdfText(data []byte) (string, error) {
 	var buf bytes.Buffer
 	buf.ReadFrom(b)
 	return buf.String(), nil
+}
+
+func cleanPDFText(text string) string {
+	text = strings.ReplaceAll(text, "\r\n", "\n")
+	lines := strings.Split(text, "\n")
+	var result strings.Builder
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			result.WriteString("\n\n")
+			continue
+		}
+		if strings.HasSuffix(line, "-") {
+			result.WriteString(strings.TrimSuffix(line, "-"))
+		} else {
+			result.WriteString(line + " ")
+		}
+	}
+
+	finalText := result.String()
+	re := regexp.MustCompile(`[ \t]+`)
+	finalText = re.ReplaceAllString(finalText, " ")
+
+	reLines := regexp.MustCompile(`\n{3,}`)
+	finalText = reLines.ReplaceAllString(finalText, "\n\n")
+
+	return strings.TrimSpace(finalText)
 }
 
 func cleanSubtitles(content string) string {
