@@ -15,7 +15,7 @@ func main() {
 
 	var err error
 	// Connexion à la base de données
-	db, err = sql.Open("sqlite3", "./langlearn.db")
+	db, err = sql.Open("sqlite3", "./imparalingue.db")
 	if err != nil {
 		log.Fatal("Erreur de connexion à la base de données:", err)
 	}

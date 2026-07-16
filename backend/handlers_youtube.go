@@ -104,9 +104,14 @@ func processDownloadAndTranscribe(id int64, videoURL string) {
 
 	// L'étape 3 : Exécution de Whisper
 	cwd, _ := os.Getwd()
-	// Construction des chemins vers l'exécutable et le modèle Whisper (en supposant qu'on lance le backend depuis le dossier backend)
-	whisperCLI := filepath.Join(cwd, "..", "whisper.cpp", "build", "bin", "whisper-cli")
-	whisperModel := filepath.Join(cwd, "..", "whisper.cpp", "models", "ggml-medium.bin")
+	var whisperRoot string
+	if _, err := os.Stat(filepath.Join(cwd, "whisper.cpp")); err == nil {
+		whisperRoot = filepath.Join(cwd, "whisper.cpp")
+	} else {
+		whisperRoot = filepath.Join(cwd, "..", "whisper.cpp")
+	}
+	whisperCLI := filepath.Join(whisperRoot, "build", "bin", "whisper-cli")
+	whisperModel := filepath.Join(whisperRoot, "models", "ggml-medium.bin")
 
 	// Lancement de whisper avec -oj pour générer un fichier JSON, et -ml 30 pour des segments de 30 caractères max (~5 mots)
 	whisperCmd := exec.Command(whisperCLI, "-m", whisperModel, "-f", whisperAudioPath, "-oj", "-ml", "30", "-sow")
