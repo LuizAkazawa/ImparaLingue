@@ -22,10 +22,22 @@ export default function ReadingView({
   handleStatusChange,
   wordStatuses,
   audioSpeed,
-  setAudioSpeed
+  setAudioSpeed,
+  
+  // Edit text props
+  inputText,
+  currentTextId,
+  updateTextContent
 }) {
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1.0);
   const [currentPage, setCurrentPage] = useState(0);
+  const [isReaderMode, setIsReaderMode] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableContent, setEditableContent] = useState('');
+
+  React.useEffect(() => {
+    setEditableContent(inputText);
+  }, [inputText, isEditing]);
 
   const [tokensPerPage, setTokensPerPage] = useState(500); // 500 tokens = ~250 mots
 
@@ -50,15 +62,28 @@ export default function ReadingView({
       {/* Top Header Section spanning full width */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button 
-            className="btn" 
-            onClick={() => setCurrentView('library')}
-            style={{ backgroundColor: 'var(--bg-secondary)', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            {t.returnBtn}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button 
+              className="btn" 
+              onClick={() => setCurrentView('library')}
+              style={{ backgroundColor: 'var(--bg-secondary)', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              {t.returnBtn}
+            </button>
+            <button 
+              className="btn" 
+              onClick={() => setIsEditing(!isEditing)}
+              style={{ backgroundColor: isEditing ? '#ef4444' : 'var(--bg-secondary)', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              {isEditing ? 'Annuler' : '✏️ Éditer'}
+            </button>
+          </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+              <input type="checkbox" checked={isReaderMode} onChange={(e) => setIsReaderMode(e.target.checked)} style={{ cursor: 'pointer' }} />
+              {t.readerMode}
+            </label>
               <select 
                 value={tokensPerPage} 
                 onChange={(e) => {
@@ -97,7 +122,36 @@ export default function ReadingView({
       </div>
 
       <div className="reading-container" style={{ flex: 1 }}>
-        <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
+        {isEditing ? (
+          <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
+            <textarea 
+              value={editableContent}
+              onChange={(e) => setEditableContent(e.target.value)}
+              style={{
+                flex: 1,
+                width: '100%',
+                padding: '1.5rem',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                color: 'white',
+                border: '1px solid var(--glass-border)',
+                fontFamily: 'inherit',
+                fontSize: '1.2rem',
+                lineHeight: '1.6',
+                resize: 'none',
+                minHeight: '60vh'
+              }}
+            />
+            <button 
+              className="btn" 
+              onClick={() => { updateTextContent(currentTextId, editableContent); setIsEditing(false); }}
+              style={{ marginTop: '1rem', alignSelf: 'flex-start' }}
+            >
+              Sauvegarder les modifications
+            </button>
+          </div>
+        ) : (
+          <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
           
           <div 
             onMouseUp={() => {
@@ -116,15 +170,16 @@ export default function ReadingView({
               selection.addRange(range);
 
               let text = range.toString().trim();
-              // Retirer toute la ponctuation pour la clé interne afin de matcher les mots 'clean'
-              let cleanText = text.replace(/[^\p{L}\p{N}\s]+/gu, '').replace(/\s+/g, ' ').trim();
+            // Retirer toute la ponctuation pour la clé interne afin de matcher les mots 'clean'
+            let cleanText = text.replace(/[^\p{L}\p{N}\s]+/gu, '').replace(/\s+/g, ' ').trim();
 
-              if (cleanText.length > 0) {
-                handleWordClick(cleanText.toLowerCase());
-              }
+            if (cleanText.length > 0) {
+              handleWordClick(cleanText.toLowerCase());
             }
-          }}
-          style={{ 
+          }
+        }}
+        className={isReaderMode ? "reader-mode-book" : ""}
+        style={{ 
           fontSize: `${1.3 * fontSizeMultiplier}rem`, 
           lineHeight: '2.2', 
           wordSpacing: '0.1em',
@@ -134,7 +189,7 @@ export default function ReadingView({
           flex: 1,
           overflowY: 'auto'
         }}>
-          {(() => {
+        {(() => {
             // On ne groupe pas les phrases "connues" pour permettre à l'utilisateur de cliquer sur les mots individuels si besoin.
             // Si la phrase est 'learning' ou 'review', on la groupe.
             const activePhrasesSet = new Set(Object.keys(wordStatuses).filter(k => k.includes(' ') && wordStatuses[k].status !== 'known'));
@@ -325,7 +380,8 @@ export default function ReadingView({
             </button>
           </div>
         )}
-      </div>
+        </div>
+      )}
       </div>
     </div>
   );

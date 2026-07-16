@@ -295,6 +295,26 @@ function App() {
     }
   };
 
+  const updateTextContent = async (textId, newContent) => {
+    try {
+      await fetch(`http://localhost:8080/api/texts`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: textId, 
+          title: textTitle, 
+          content: newContent,
+          segments_json: textSegments ? JSON.stringify(textSegments) : ""
+        })
+      });
+      setInputText(newContent);
+      setSavedTexts(prev => prev.map(t => t.id === textId ? { ...t, content: newContent } : t));
+      startReadingContent(textId, textTitle, newContent, youtubeAudioUrl, textSegments ? JSON.stringify(textSegments) : null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleWordEdit = async (oldWord, newWord) => {
     if (!oldWord || !newWord || oldWord === newWord || !currentTextId) return;
 
@@ -596,6 +616,9 @@ function App() {
             <ReadingView 
               t={t}
               textTitle={textTitle}
+              inputText={inputText}
+              currentTextId={currentTextId}
+              updateTextContent={updateTextContent}
               words={words}
               textSegments={textSegments}
               currentAudioTime={currentAudioTime}

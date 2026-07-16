@@ -1,6 +1,6 @@
 export const translations = {
   fr: {
-    appTitle: "LangLearn",
+    appTitle: "ImparaLingue",
     appSubtitle: "Ton assistant de lecture intelligent 🧠",
     vocabulary: "Vocabulaire",
     library: "Bibliothèque",
@@ -60,9 +60,10 @@ export const translations = {
     notesPlaceholder: "Ajouter une note ici...",
     translationPlaceholder: "Traduction...",
     clickWordHint: "Cliquez sur un mot<br/>pour voir sa traduction",
+    readerMode: "Mode Lecture",
   },
   en: {
-    appTitle: "LangLearn",
+    appTitle: "ImparaLingue",
     appSubtitle: "Your intelligent reading assistant 🧠",
     vocabulary: "Vocabulary",
     library: "Library",
@@ -122,9 +123,10 @@ export const translations = {
     notesPlaceholder: "Add a note here...",
     translationPlaceholder: "Translation...",
     clickWordHint: "Click on a word<br/>to see its translation",
+    readerMode: "Reader Mode",
   },
   pt: {
-    appTitle: "LangLearn",
+    appTitle: "ImparaLingue",
     appSubtitle: "Seu assistente de leitura inteligente 🧠",
     vocabulary: "Vocabulário",
     library: "Biblioteca",
@@ -184,9 +186,10 @@ export const translations = {
     notesPlaceholder: "Adicionar nota aqui...",
     translationPlaceholder: "Tradução...",
     clickWordHint: "Clique em uma palavra<br/>para ver a tradução",
+    readerMode: "Modo Leitura",
   },
   it: {
-    appTitle: "LangLearn",
+    appTitle: "ImparaLingue",
     appSubtitle: "Il tuo assistente di lettura intelligente 🧠",
     vocabulary: "Vocabolario",
     library: "Biblioteca",
@@ -246,5 +249,6 @@ export const translations = {
     notesPlaceholder: "Aggiungi una nota qui...",
     translationPlaceholder: "Traduzione...",
     clickWordHint: "Clicca su una parola<br/>per vederne la traduzione",
+    readerMode: "Modalità Lettura",
   }
 };
