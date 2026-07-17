@@ -405,11 +405,14 @@ function App() {
     loadWordData(cleanWord, updatedStatuses);
   };
 
-  const handleStatusChange = async (newStatus) => {
+  const handleStatusChange = async (newStatus, overrideTranslation = null, overrideNotes = null) => {
     if (!selectedWord) return;
     
+    const currentTrans = overrideTranslation !== null ? overrideTranslation : translationText;
+    const currentNotes = overrideNotes !== null ? overrideNotes : notesText;
+
     const updates = {};
-    updates[selectedWord] = { status: newStatus, translation: translationText, notes: notesText };
+    updates[selectedWord] = { status: newStatus, translation: currentTrans, notes: currentNotes };
 
     // Si on marque une phrase entière comme connue, on valide aussi les mots inconnus qui la composent
     if (newStatus === 'known' && selectedWord.includes(' ')) {
@@ -443,10 +446,41 @@ function App() {
           })
         });
       } catch (err) {
-        console.error(`Erreur de sauvegarde pour ${word} :`, err);
       }
     }
   }
+
+  const improveTranslationWithDeepL = async () => {
+    if (!selectedWord) return;
+    setIsTranslating(true);
+    try {
+      let targetLang = uiLang;
+      if (currentLang === targetLang) {
+        targetLang = targetLang === 'en' ? 'fr' : 'en';
+      }
+      const res = await fetch(`http://localhost:8080/api/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: selectedWord,
+          source_lang: currentLang,
+          target_lang: targetLang,
+          provider: 'deepl'
+        })
+      });
+      const data = await res.json();
+      if (data && data.translation) {
+        setTranslationText(data.translation);
+        // Sauvegarde immédiate de la traduction améliorée
+        const currentStatus = wordStatuses[selectedWord]?.status || 'unknown';
+        handleStatusChange(currentStatus, data.translation, notesText);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
   
   const playAudio = (word) => {
     // On utilise maintenant notre propre serveur Go (Proxy) pour télécharger et renvoyer le MP3.
@@ -661,6 +695,7 @@ function App() {
             setAudioSpeed={setAudioSpeed}
             uiLang={uiLang}
             handleWordEdit={handleWordEdit}
+            improveTranslationWithDeepL={improveTranslationWithDeepL}
           />
         </div>
       )}

@@ -61,6 +61,7 @@ export const translations = {
     translationPlaceholder: "Traduction...",
     clickWordHint: "Cliquez sur un mot<br/>pour voir sa traduction",
     readerMode: "Mode Lecture",
+    improveTranslation: "Améliorer avec DeepL",
   },
   en: {
     appTitle: "ImparaLingue",
@@ -124,6 +125,7 @@ export const translations = {
     translationPlaceholder: "Translation...",
     clickWordHint: "Click on a word<br/>to see its translation",
     readerMode: "Reader Mode",
+    improveTranslation: "Improve with DeepL",
   },
   pt: {
     appTitle: "ImparaLingue",
@@ -187,6 +189,7 @@ export const translations = {
     translationPlaceholder: "Tradução...",
     clickWordHint: "Clique em uma palavra<br/>para ver a tradução",
     readerMode: "Modo Leitura",
+    improveTranslation: "Melhorar com DeepL",
   },
   it: {
     appTitle: "ImparaLingue",
@@ -250,5 +253,6 @@ export const translations = {
     translationPlaceholder: "Traduzione...",
     clickWordHint: "Clicca su una parola<br/>per vederne la traduzione",
     readerMode: "Modalità Lettura",
+    improveTranslation: "Migliorare con DeepL",
   }
 };

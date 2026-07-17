@@ -243,7 +243,33 @@ export default function ReadingView({
               const currentWord = displayedWords[i];
 
               if (!currentWord.isWord) {
-                renderedElements.push(<span key={currentWord.id} style={getSegmentStyle(i, i)}>{currentWord.original}</span>);
+                let textToRender = currentWord.original;
+
+                // Option A : Formatage des dialogues visuel (À la volée)
+                if (textToRender === '-' || textToRender === '—' || textToRender === '–') {
+                  const nextToken = i + 1 < displayedWords.length ? displayedWords[i + 1] : null;
+                  const prevToken = i > 0 ? displayedWords[i - 1] : null;
+                  
+                  // Si le tiret est suivi d'un espace, on le considère comme un tiret de dialogue
+                  if (nextToken && !nextToken.isWord && nextToken.original.startsWith(' ')) {
+                    textToRender = '—'; // Remplacement par un beau tiret cadratin
+                    
+                    // On force le saut de paragraphe s'il n'y en a pas déjà
+                    let newlinesNeeded = 2;
+                    if (prevToken && !prevToken.isWord) {
+                      const newlinesCount = (prevToken.original.match(/\n/g) || []).length;
+                      newlinesNeeded = Math.max(0, 2 - newlinesCount);
+                    } else if (i === 0) {
+                      newlinesNeeded = 0; // Pas de saut de ligne si c'est le tout premier caractère
+                    }
+                    
+                    if (newlinesNeeded > 0) {
+                      textToRender = '\n'.repeat(newlinesNeeded) + textToRender;
+                    }
+                  }
+                }
+
+                renderedElements.push(<span key={currentWord.id} style={getSegmentStyle(i, i)}>{textToRender}</span>);
                 i++;
                 continue;
               }

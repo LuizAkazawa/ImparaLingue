@@ -15,7 +15,8 @@ export default function DictionarySidebar({
   audioSpeed,
   setAudioSpeed,
   uiLang,
-  handleWordEdit
+  handleWordEdit,
+  improveTranslationWithDeepL
 }) {
   const [isEditingWord, setIsEditingWord] = useState(false);
   const [editWordValue, setEditWordValue] = useState('');
@@ -110,9 +111,25 @@ export default function DictionarySidebar({
 
       {/* Meaning Section */}
       <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-primary)', marginBottom: '0.8rem', fontSize: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--text-primary)', marginBottom: '0.8rem', fontSize: '1rem' }}>
           <span>{t.translationTitle}</span>
-          <span style={{ color: 'var(--text-secondary)', cursor: 'pointer' }}>v</span>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button 
+              onClick={improveTranslationWithDeepL} 
+              disabled={isTranslating}
+              style={{ 
+                background: 'rgba(59, 130, 246, 0.2)', 
+                color: 'var(--word-unknown)', 
+                border: '1px solid rgba(59, 130, 246, 0.5)', 
+                borderRadius: '4px', 
+                padding: '0.3rem 0.6rem', 
+                cursor: isTranslating ? 'wait' : 'pointer',
+                fontSize: '0.85rem'
+              }}>
+              {t.improveTranslation}
+            </button>
+            <span style={{ color: 'var(--text-secondary)', cursor: 'pointer' }}>v</span>
+          </div>
         </div>
         <div style={{ position: 'relative' }}>
           {isTranslating ? (
