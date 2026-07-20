@@ -9,6 +9,7 @@ import LibraryView from './components/LibraryView'
 import ImportView from './components/ImportView'
 import ReadingView from './components/ReadingView'
 import DictionarySidebar from './components/DictionarySidebar'
+import CinemaView from './components/CinemaView'
 
 const CURRENT_USER_ID = "test_user_1";
 
@@ -179,7 +180,12 @@ function App() {
     setWords(processedWords);
     setYoutubeAudioUrl(audioUrl);
     setTextSegments(segmentsJson ? JSON.parse(segmentsJson) : null);
-    setCurrentView('reading');
+    
+    if (audioUrl && (audioUrl.includes('youtube.com') || audioUrl.includes('youtu.be'))) {
+      setCurrentView('cinema');
+    } else {
+      setCurrentView('reading');
+    }
   };
 
   const saveTextToLibrary = async (title, content, audioUrl = '', segmentsJson = '') => {
@@ -624,6 +630,34 @@ function App() {
             setCurrentView={setCurrentView}
             startReadingContent={startReadingContent}
             saveTextToLibrary={saveTextToLibrary}
+          />
+        )}
+
+        {currentView === 'cinema' && (
+          <CinemaView 
+            t={t}
+            textTitle={textTitle}
+            youtubeUrl={youtubeAudioUrl}
+            words={words}
+            setCurrentView={setCurrentView}
+            handleWordClick={handleWordClick}
+            getWordStyle={getWordStyle}
+            textSegments={textSegments}
+            wordStatuses={wordStatuses}
+            selectedWord={selectedWord}
+            setSelectedWord={setSelectedWord}
+            playAudio={playAudio}
+            isTranslating={isTranslating}
+            translationText={translationText}
+            setTranslationText={setTranslationText}
+            notesText={notesText}
+            setNotesText={setNotesText}
+            handleStatusChange={handleStatusChange}
+            audioSpeed={audioSpeed}
+            setAudioSpeed={setAudioSpeed}
+            uiLang={uiLang}
+            handleWordEdit={handleWordEdit}
+            improveTranslationWithDeepL={improveTranslationWithDeepL}
           />
         )}
 

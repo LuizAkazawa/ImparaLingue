@@ -21,6 +21,11 @@ export default function Header({ t, uiLang, setUiLang, currentView, setCurrentVi
               {t.library}
             </button>
           )}
+          {currentView !== 'cinema' && (
+            <button className="btn" style={{ backgroundColor: 'var(--bg-secondary)', padding: '0.5rem 1rem' }} onClick={() => setCurrentView('cinema')}>
+              Cinéma 🎬
+            </button>
+          )}
 
           <div style={{ position: 'relative' }}>
             <button 

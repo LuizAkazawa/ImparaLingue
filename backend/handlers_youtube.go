@@ -13,7 +13,8 @@ import (
 )
 
 type YoutubeRequest struct {
-	URL string `json:"url"`
+	URL  string `json:"url"`
+	Mode string `json:"mode"`
 }
 
 type YoutubeResponse struct {
@@ -47,7 +48,7 @@ func youtubeDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	id, _ := res.LastInsertId()
 
 	// 2. Lancer le traitement en arrière-plan
-	go processDownloadAndTranscribe(id, req.URL)
+	go processDownloadAndTranscribe(id, req.URL, req.Mode)
 
 	resp := YoutubeResponse{
 		Message: "Téléchargement démarré en arrière-plan",
@@ -59,7 +60,7 @@ func youtubeDownloadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Fonction exécutée en arrière-plan (goroutine)
-func processDownloadAndTranscribe(id int64, videoURL string) {
+func processDownloadAndTranscribe(id int64, videoURL string, mode string) {
 	downloadDir := "./downloads"
 	os.MkdirAll(downloadDir, os.ModePerm)
 
@@ -82,25 +83,36 @@ func processDownloadAndTranscribe(id int64, videoURL string) {
 	os.Remove(whisperAudioPath)
 	os.Remove(whisperAudioPath + ".json")
 
-	// 1. Téléchargement de la vidéo en audio MP3 de haute qualité pour l'utilisateur
-	cmd := exec.Command("yt-dlp", "-x", "--audio-format", "mp3", "-o", hqOutputPath, videoURL)
-	
-	if err := cmd.Run(); err != nil {
-		fmt.Println("Erreur yt-dlp (HQ):", err)
-		db.Exec("UPDATE transcriptions SET status = 'error_download' WHERE id = ?", id)
-		return
-	}
+	if mode == "cinema" {
+		// Mode cinéma : on télécharge uniquement l'audio basse qualité pour Whisper, pas de MP3
+		cmd := exec.Command("yt-dlp", "-x", "--audio-format", "wav", "--postprocessor-args", "-ar 16000 -ac 1", "-o", whisperAudioPath, videoURL)
+		if err := cmd.Run(); err != nil {
+			fmt.Println("Erreur yt-dlp (Cinema):", err)
+			db.Exec("UPDATE transcriptions SET status = 'error_download' WHERE id = ?", id)
+			return
+		}
+		db.Exec("UPDATE transcriptions SET status = 'transcribing' WHERE id = ?", id)
+	} else {
+		// Mode podcast (défaut) : on télécharge le MP3 haute qualité
+		cmd := exec.Command("yt-dlp", "-x", "--audio-format", "mp3", "-o", hqOutputPath, videoURL)
+		
+		if err := cmd.Run(); err != nil {
+			fmt.Println("Erreur yt-dlp (HQ):", err)
+			db.Exec("UPDATE transcriptions SET status = 'error_download' WHERE id = ?", id)
+			return
+		}
 
-	// 2. Conversion en WAV mono 16kHz pour Whisper
-	ffmpegCmd := exec.Command("ffmpeg", "-y", "-i", finalHQAudioPath, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", whisperAudioPath)
-	if err := ffmpegCmd.Run(); err != nil {
-		fmt.Println("Erreur ffmpeg conversion Whisper:", err)
-		db.Exec("UPDATE transcriptions SET status = 'error_download' WHERE id = ?", id)
-		return
-	}
+		// Conversion en WAV mono 16kHz pour Whisper
+		ffmpegCmd := exec.Command("ffmpeg", "-y", "-i", finalHQAudioPath, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", whisperAudioPath)
+		if err := ffmpegCmd.Run(); err != nil {
+			fmt.Println("Erreur ffmpeg conversion Whisper:", err)
+			db.Exec("UPDATE transcriptions SET status = 'error_download' WHERE id = ?", id)
+			return
+		}
 
-	// Mettre à jour la DB avec le chemin de l'audio HQ
-	db.Exec("UPDATE transcriptions SET status = 'transcribing', audio_path = ? WHERE id = ?", finalHQAudioPath, id)
+		// Mettre à jour la DB avec le chemin de l'audio HQ
+		db.Exec("UPDATE transcriptions SET status = 'transcribing', audio_path = ? WHERE id = ?", finalHQAudioPath, id)
+	}
 
 	// L'étape 3 : Exécution de Whisper
 	cwd, _ := os.Getwd()
@@ -141,6 +153,7 @@ func processDownloadAndTranscribe(id int64, videoURL string) {
 type YoutubeStatusResponse struct {
 	Status        string          `json:"status"`
 	AudioURL      string          `json:"audio_url,omitempty"`
+	VideoURL      string          `json:"video_url,omitempty"`
 	Transcription json.RawMessage `json:"transcription,omitempty"`
 	Title         string          `json:"title,omitempty"`
 }
@@ -157,10 +170,10 @@ func youtubeStatusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var status, title string
+	var status, title, videoURL string
 	var audioPath sql.NullString
 	
-	err := db.QueryRow("SELECT status, audio_path, title FROM transcriptions WHERE id = ?", id).Scan(&status, &audioPath, &title)
+	err := db.QueryRow("SELECT status, audio_path, title, url FROM transcriptions WHERE id = ?", id).Scan(&status, &audioPath, &title, &videoURL)
 	if err != nil {
 		http.Error(w, "Transcription introuvable", http.StatusNotFound)
 		return
@@ -171,9 +184,12 @@ func youtubeStatusHandler(w http.ResponseWriter, r *http.Request) {
 		Title:  title,
 	}
 
-	// Si c'est terminé, on donne l'URL de l'audio et on lit le fichier JSON généré
-	if status == "completed" && audioPath.Valid {
-		resp.AudioURL = fmt.Sprintf("http://localhost:8080/downloads/audio_%s.mp3?t=%d", id, time.Now().UnixNano())
+	// Si c'est terminé, on donne les infos nécessaires
+	if status == "completed" {
+		if audioPath.Valid {
+			resp.AudioURL = fmt.Sprintf("http://localhost:8080/downloads/audio_%s.mp3?t=%d", id, time.Now().UnixNano())
+		}
+		resp.VideoURL = videoURL
 		
 		jsonPath := fmt.Sprintf("./downloads/audio_%s_whisper.wav.json", id)
 		jsonData, err := os.ReadFile(jsonPath)

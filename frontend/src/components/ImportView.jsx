@@ -16,7 +16,7 @@ export default function ImportView({
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState('');
 
-  const handleYoutubeImport = async () => {
+  const handleYoutubeImport = async (mode) => {
     if (!youtubeUrl) return;
     setIsTranscribing(true);
     setTranscriptionStatus('downloading');
@@ -24,7 +24,7 @@ export default function ImportView({
       const res = await fetch('http://localhost:8080/api/youtube/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: youtubeUrl })
+        body: JSON.stringify({ url: youtubeUrl, mode: mode })
       });
       const data = await res.json();
       
@@ -45,10 +45,12 @@ export default function ImportView({
              fullText = "Erreur: format de transcription inattendu.";
           }
           
+          let urlToSave = mode === 'cinema' ? statusData.video_url : statusData.audio_url;
+          
           await saveTextToLibrary(
             statusData.title || "Vidéo YouTube", 
             fullText, 
-            statusData.audio_url, 
+            urlToSave, 
             statusData.transcription && statusData.transcription.transcription ? JSON.stringify(statusData.transcription.transcription) : ''
           );
           setCurrentView('library');
@@ -92,9 +94,14 @@ export default function ImportView({
             ⏳ {getStatusText()}
           </div>
         ) : (
-          <button className="btn" onClick={handleYoutubeImport} style={{ width: '100%', backgroundColor: '#ef4444', color: 'white' }}>
-            Télécharger & Transcrire
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+            <button className="btn" onClick={() => handleYoutubeImport('podcast')} style={{ width: '100%', backgroundColor: 'var(--word-learning)', color: 'white' }}>
+              🎧 Importer en Podcast (Télécharge le MP3)
+            </button>
+            <button className="btn" onClick={() => handleYoutubeImport('cinema')} style={{ width: '100%', backgroundColor: '#ef4444', color: 'white' }}>
+              🎬 Importer en Cinéma (Léger, sans MP3)
+            </button>
+          </div>
         )}
       </div>
 
